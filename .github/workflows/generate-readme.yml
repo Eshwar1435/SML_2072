@@ -3,34 +3,30 @@ name: Generate README
 on:
   push:
     branches:
-      - main  # Trigger the action when there's a push to the main branch
-  workflow_dispatch:  # Allows you to trigger the workflow manually from the GitHub interface
+      - main  # Trigger the workflow on push to the main branch
 
 jobs:
-  build:
+  generate-readme:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'  # Set Node.js version
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: npm install  # If you use a package to generate the README
+      - name: Run README Generator Script
+        run: python scripts/generate_readme.py
 
-    - name: Run README generator
-      run: npx readme-md-generator  # Example using the npm package
-
-    - name: Commit and Push changes
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add README.md
-        git commit -m "Auto-generated README"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push the updated README
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "Auto-generate README [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
